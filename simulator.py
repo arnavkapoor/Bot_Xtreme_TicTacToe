@@ -37,6 +37,8 @@ class Random_Player():
         cells = board.find_valid_move_cells(old_move)
         return cells[random.randrange(len(cells))]
 
+
+
 class Manual_Player:
     def __init__(self):
         pass
@@ -96,13 +98,21 @@ class Manual_Player:
                         score = 6   
                     for i in range(0,3):
                         for j in range(0,3):
-                            if game_board.big_boards_status[k][h*3+i][v*3+j] == ch and game_board.big_boards_status[k][h*3+i][((v*3+j+1)%mdv+mdv_)%mdv] == ch:
+                            if (v*3+j+1)%mdv == 0:
+                                rr = mdv_
+                            else:
+                                rr = v*3+j+1
+                            if (h*3+j+1)%mdh == 0:
+                                rh = mdh_
+                            else:
+                                rh = h*3+j+1
+                            if game_board.big_boards_status[k][h*3+i][v*3+j] == ch and game_board.big_boards_status[k][h*3+i][rr] == ch:
                                 can_win = 1
-                            if game_board.big_boards_status[k][h*3+i][v*3+j] == op_ch and game_board.big_boards_status[k][h*3+i][((v*3+j+1)%mdv+mdv_)%mdv] == op_ch:
+                            if game_board.big_boards_status[k][h*3+i][v*3+j] == op_ch and game_board.big_boards_status[k][h*3+i][rr] == op_ch:
                                 can_lose = 1
-                            if game_board.big_boards_status[k][h*3+j][v*3+i] == ch and game_board.big_boards_status[k][((h*3+j+1)%mdh+mdh_)%mdh][v*3+i] == ch:
+                            if game_board.big_boards_status[k][h*3+j][v*3+i] == ch and game_board.big_boards_status[k][rh][v*3+i] == ch:
                                 can_win = 1
-                            if game_board.big_boards_status[k][h*3+j][v*3+i] == op_ch and game_board.big_boards_status[k][((h*3+j+1)%mdh+mdh_)%mdh][v*3+i] == op_ch:
+                            if game_board.big_boards_status[k][h*3+j][v*3+i] == op_ch and game_board.big_boards_status[k][rh][v*3+i] == op_ch:
                                 can_lose = 1
                     
                     # Diagonals
