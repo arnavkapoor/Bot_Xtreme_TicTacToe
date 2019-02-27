@@ -16,9 +16,12 @@ import signal
 import time
 import copy
 import traceback
-
-TIME = 24
-MAX_PTS = 1000000
+from Team16 import Team16
+from team7 import Team7
+from team11 import Team11
+from ttt import Team
+TIME = 2400000
+MAX_PTS = 86
 
 class TimedOutExc(Exception):
     pass
@@ -38,129 +41,13 @@ class Random_Player():
         return cells[random.randrange(len(cells))]
 
 
-
 class Manual_Player:
     def __init__(self):
         pass
-
-    def minimax(self,board,old_move,flag,depth):
-        if flag == 'o':
-           best = [-1,-1,-1, -1000]
-        else:
-           best = [-1,-1,-1, +1000]
-
-        if depth == 0:
-            value = self.calculate_heuristic(board,flag);
-            return [-1 , -1 , -1, value];
-
-        cells = board.find_valid_move_cells(old_move)
-        
-        for cell in cells:
-            x, y, z = cell[0],cell[1],cell[2]
-           
-            board.big_boards_status[x][y][z] = flag
-            
-            if flag == 'x':
-                bmove = self.minimax(board,old_move,'o',depth-1)
-            if flag == 'o':
-                bmove = self.minimax(board,old_move,'x',depth-1)
-
-            board.big_boards_status[x][y][z] = '-'
-            bmove[0],bmove[1],bmove[2] = x,y,z;
-            if flag == 'o':
-                if bmove[3] > best[3]:
-                    best = bmove  # max value
-            
-            else:
-                if bmove[3] < best[3]:
-                    best = bmove  # min value
-        board.print_board()
-        print best
-        # time.sleep(5)
-        return best
-    def calculate_heuristic(self,game_board,ch,op_ch='x'):
-        f_ans = 0;
-        for k in range(0,2):
-            ans=0
-            for h in range(0,3):
-                mdh = (h+1)*3;
-                mdh_ = h*3;
-                for v in range(0,3):
-                    mdv = (v+1)*3;
-                    mdv_ = v*3;
-                    can_win = 0
-                    can_lose = 0
-                    if h == 1 and v == 1:
-                        score = 3
-                    elif (h+v)%2 == 0:
-                        score = 4
-                    else:
-                        score = 6   
-                    for i in range(0,3):
-                        for j in range(0,3):
-                            if (v*3+j+1)%mdv == 0:
-                                rr = mdv_
-                            else:
-                                rr = v*3+j+1
-                            if (h*3+j+1)%mdh == 0:
-                                rh = mdh_
-                            else:
-                                rh = h*3+j+1
-                            if game_board.big_boards_status[k][h*3+i][v*3+j] == ch and game_board.big_boards_status[k][h*3+i][rr] == ch:
-                                can_win = 1
-                            if game_board.big_boards_status[k][h*3+i][v*3+j] == op_ch and game_board.big_boards_status[k][h*3+i][rr] == op_ch:
-                                can_lose = 1
-                            if game_board.big_boards_status[k][h*3+j][v*3+i] == ch and game_board.big_boards_status[k][rh][v*3+i] == ch:
-                                can_win = 1
-                            if game_board.big_boards_status[k][h*3+j][v*3+i] == op_ch and game_board.big_boards_status[k][rh][v*3+i] == op_ch:
-                                can_lose = 1
-                    
-                    # Diagonals
-                    
-                    if game_board.big_boards_status[k][h*3][v*3] == ch and game_board.big_boards_status[k][h*3+1][v*3+1] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3+1][v*3+1] == ch and game_board.big_boards_status[k][h*3+2][v*3+2] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3+2][v*3+2] == ch and game_board.big_boards_status[k][h*3][v*3] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3][v*3] == op_ch and game_board.big_boards_status[k][h*3+1][v*3+1] == op_ch:
-                        can_lose = 1
-                    if game_board.big_boards_status[k][h*3+1][v*3+1] == op_ch and game_board.big_boards_status[k][h*3+2][v*3+2] == op_ch:
-                        can_lose = 1
-                    if game_board.big_boards_status[k][h*3+2][v*3+2] == op_ch and game_board.big_boards_status[k][h*3][v*3] == op_ch:
-                        can_lose = 1
-                    if game_board.big_boards_status[k][h*3][v*3+2] == ch and game_board.big_boards_status[k][h*3+1][v*3+1] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3+1][v*3+1] == ch and game_board.big_boards_status[k][h*3+2][v*3] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3+2][v*3] == ch and game_board.big_boards_status[k][h*3][v*3+2] == ch:
-                        can_win = 1
-                    if game_board.big_boards_status[k][h*3][v*3+2] == op_ch and game_board.big_boards_status[k][h*3+1][v*3+1] == op_ch:
-                        can_lose = 1
-                    if game_board.big_boards_status[k][h*3+1][v*3+1] == op_ch and game_board.big_boards_status[k][h*3+2][v*3] == op_ch:
-                        can_lose = 1
-                    if game_board.big_boards_status[k][h*3+2][v*3] == op_ch and game_board.big_boards_status[k][h*3][v*3+2] == op_ch:
-                        can_lose = 1
-
-                    if can_win == 1 and can_lose == 1:
-                        ans+=10;
-                    elif can_lose == 1:
-                        ans -= score
-                    elif can_win == 1:
-                        ans += score
-                    else:
-                        pass
-            f_ans += ans
-        # if f_ans != 0:
-        # game_board.print_board()
-       
-        return f_ans
-
-
     def move(self, board, old_move, flag):
         print 'Enter your move: <format:board row column> (you\'re playing with', flag + ")"    
-        mvp = self.minimax(board,old_move,flag,1)
-        # time.sleep(5);
+        mvp = raw_input()
+        mvp = mvp.split()
         return (int(mvp[0]), int(mvp[1]), int(mvp[2]))
 
 class BigBoard:
@@ -479,14 +366,16 @@ if __name__ == '__main__':
     obj2 = ''
     option = sys.argv[1]    
     if option == '1':
-        obj1 = Random_Player()
-        obj2 = Random_Player()
-
+        obj1 = Team16()
+        obj2 = Team()
     elif option == '2':
-        obj1 = Random_Player()
-        obj2 = Manual_Player()
+        obj1 = Team11()
+        obj2 = Team16()
     elif option == '3':
-        obj1 = Manual_Player()
+        obj1 = Team16()
+        obj2 = Team7()
+    elif option == '4':
+        obj1 = Team16()
         obj2 = Manual_Player()
     else:
         print 'Invalid option'
