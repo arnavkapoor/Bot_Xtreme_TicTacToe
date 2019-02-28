@@ -19,10 +19,7 @@ class Team162:
         
         for cell in cells:
             x,y,z = cell[0],cell[1],cell[2]
-            # try:
             poss_boards.append(cell)
-            # except:
-                # print(poss_boards)
 
             board.big_boards_status[x][y][z] = flag
 
@@ -35,30 +32,13 @@ class Team162:
                 if flag == 'o':
                     bmove = self.minimax(board,[x,y,z],'x',depth-1,0,poss_boards)
 
-            # posarr = [0,2,3,5,6,8]
-            # if(y%3 == 1 and z%3 == 1):
-            #     if flag == 'x':
-            #         bmove[3] -= 5
-            #     else:
-            #         bmove[3] += 5
-            
-            # if(y in posarr and z%3 == 1):
-            #     if flag == 'x':
-            #         bmove[3] -= 5
-            #     else:
-            #         bmove[3] += 5
-            # if(z in posarr and y%3 == 1):
-            #     if flag == 'x':
-            #         bmove[3] -= 5
-            #     else:
-            #         bmove[3] += 5
-            
+                    
             board.big_boards_status[x][y][z] = '-'
             poss_boards.pop()
             bmove[0],bmove[1],bmove[2] = x,y,z;
             
             if flag == 'o':
-                if bmove[3] > best[3]:
+                if bmove[3] >= best[3]:
                     best = bmove  # max value        
             else:
                 if bmove[3] < best[3]:
@@ -101,14 +81,20 @@ class Team162:
 
         bs2 = bs
         scoremf = 0
-        factor = 30
-        factor2 = 200
+        factor = 30  # Winning triplets in Small Boards
+        factor2 = 500 # Winning Triplets in Big Board(Entire Game)
+        factor3 = 7 # xx* type in small boards
+        factor4 = 0 # xx* type in Big Board
         ssmall_boards_status = copy.deepcopy(bs2.small_boards_status)
         for mv in poss_boards:
             x = mv[1]/3
             y = mv[2]/3
             z = mv[0]
             factor -= 5
+            factor2 -= 20
+            factor3 -= 1
+            factor4 -= 0
+
             bs = bs2.big_boards_status[z]
             for i in range(3):
                     #checking for horizontal pattern(i'th row)
@@ -138,9 +124,79 @@ class Team162:
                 if (bs[3*x][3*y+2] == bs[3*x+1][3*y+1] == bs[3*x+2][3*y]) and (bs[3*x][3*y+2] == 'x'):
                     scoremf-=factor
                     ssmall_boards_status[z][x][y] = 'x'
-            factor2 -= 20
+
+
+                if (bs[3*x+i][3*y] == bs[3*x+i][3*y+1] and bs[3*x+i][3*y+2]=='-'):
+                    if bs[3*x+i][3*y] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x+i][3*y] =='x':
+                        scoremf -= factor3
+                if (bs[3*x+i][3*y] == bs[3*x+i][3*y+2] and bs[3*x+i][3*y+1]=='-'):
+                    if bs[3*x+i][3*y] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x+i][3*y] =='x':
+                        scoremf -= factor3
+                if (bs[3*x+i][3*y+2] == bs[3*x+i][3*y+1] and bs[3*x+i][3*y]=='-'):
+                    if bs[3*x+i][3*y+1] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x+i][3*y+1] =='x':
+                        scoremf -= factor3
+                if (bs[3*x][3*y+i] == bs[3*x+1][3*y+i] and bs[3*x+2][3*y+i] == '-'):
+                    if bs[3*x][3*y+i] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x][3*y+i] == 'x':
+                        scoremf -= factor3
+                if (bs[3*x][3*y+i] == bs[3*x+2][3*y+i] and bs[3*x+1][3*y+i] == '-'):
+                    if bs[3*x][3*y+i] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x][3*y+i] == 'x':
+                        scoremf -= factor3
+                if (bs[3*x+2][3*y+i] == bs[3*x+1][3*y+i] and bs[3*x][3*y+i] == '-'):
+                    if bs[3*x+1][3*y+i] == 'o':
+                        scoremf += factor3
+                    elif bs[3*x+1][3*y+i] == 'x':
+                        scoremf -= factor3
+
+            # Diagonals
+            # Top Left to Bottom Right
+            
+            if(bs[3*x][3*y] == bs[3*x+1][3*y+1] and bs[3*x+2][3*y+2] == '-'):
+                if (bs[3*x][3*y] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x][3*y] == 'o'):
+                    scoremf += (factor3-1)
+            if(bs[3*x][3*y] == bs[3*x+2][3*y+2] and bs[3*x+1][3*y+1] == '-'):
+                if (bs[3*x][3*y] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x][3*y] == 'o'):
+                    scoremf += (factor3-1)
+            if(bs[3*x+2][3*y+2] == bs[3*x+1][3*y+1] and bs[3*x][3*y] == '-'):
+                if (bs[3*x+1][3*y+1] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x+1][3*y+1] == 'o'):
+                    scoremf += (factor3-1)
+            
+            # Top right to Bottom Left
+            
+            if(bs[3*x+1][3*y+1] == bs[3*x][3*y+2] and bs[3*x+2][3*y] == '-'):
+                if (bs[3*x+1][3*y+1] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x+1][3*y+1] == 'o'):
+                    scoremf += (factor3-1)
+            if(bs[3*x+1][3*y+1] == bs[3*x+2][3*y] and bs[3*x][3*y+2] == '-'):
+                if (bs[3*x+1][3*y+1] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x+1][3*y+1] == 'o'):
+                    scoremf += (factor3-1)
+            if(bs[3*x][3*y+2] == bs[3*x+2][3*y] and bs[3*x+1][3*y+1] == '-'):
+                if (bs[3*x][3*y+2] == 'x'):
+                    scoremf -= (factor3-1)
+                elif (bs[3*x][3*y+2] == 'o'):
+                    scoremf += (factor3-1)
+
             bs = ssmall_boards_status[z]
             for i in range(3):
+            # Rows and columns triplets 
                 if (bs[i][0] == bs[i][1] and bs[i][1] == bs[i][2]):
                     if (bs[i][0] == 'o'):
                         scoremf += factor2
@@ -151,6 +207,50 @@ class Team162:
                         scoremf += factor2
                     elif (bs[0][i] == 'x'):
                         scoremf -= factor2
+
+
+            # Rows and Columns duets
+
+            # Rows
+            # xx*
+                if (bs[0][i] == bs[1][i] and bs[2][i] == '-'): 
+                    if (bs[0][i] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[0][i] == 'o'):
+                        scoremf += factor4
+            # *xx
+                if (bs[2][i] == bs[1][i] and bs[0][i] == '-'):
+                    if (bs[1][i] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[1][i] == 'o'):
+                        scoremf += factor4
+            # x*x
+                if (bs[0][i] == bs[2][i] and bs[1][i] == '-'):
+                    if (bs[0][i] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[0][i] == 'o'):
+                        scoremf += factor4
+            #  Columns
+                if (bs[i][0] == bs[i][1] and bs[i][2] == '-'):
+                    if (bs[i][0] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[i][0] == 'o'):
+                        scoremf += factor4
+                if (bs[i][2] == bs[i][1] and bs[i][0] == '-'):
+                    if (bs[i][1] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[i][1] == 'o'):
+                        scoremf += factor4
+                if (bs[i][0] == bs[i][2] and bs[i][1] == '-'):
+                    if (bs[i][0] == 'x'):
+                        scoremf -= factor4
+                    elif (bs[i][0] == 'o'):
+                        scoremf += factor4
+
+
+
+           # Diagonals of triplets
+
             if bs[0][0] == bs[1][1] and bs[1][1] == bs[2][2]:
                 if bs[0][0] == 'x':
                     scoremf -= factor2
@@ -162,6 +262,46 @@ class Team162:
                 elif bs[1][1] == 'o':
                     scoremf += factor2 
 
+            # Diagonals of duets
+
+            # Top Left to Bottom Right
+            # xx*
+            if bs[0][0] == bs[1][1] and bs[2][2] == '-':
+                if bs[0][0] == 'x':
+                    scoremf -= factor4
+                elif bs[0][0] == 'o':
+                    scoremf += factor4
+            # x*x
+            if bs[0][0] == bs[2][2] and bs[1][1] == '-':
+                if bs[0][0] == 'x':
+                    scoremf -= factor4
+                elif bs[0][0] == 'o':
+                    scoremf += factor4
+            # *xx
+            if bs[2][2] == bs[1][1] and bs[0][0] == '-':
+                if bs[1][1] == 'x':
+                    scoremf -= factor4
+                elif bs[1][1] == 'o':
+                    scoremf += factor4
+
+            # Bottom Left to Top Right
+            if bs[2][0] == bs[1][1] and bs[0][2] == '-':
+                if bs[1][1] == 'x':
+                    scoremf -= factor4
+                elif bs[1][1] == 'o':
+                    scoremf += factor4
+            if bs[0][2] == bs[1][1] and bs[2][0] == '-':
+                if bs[1][1] == 'x':
+                    scoremf -= factor4
+                elif bs[1][1] == 'o':
+                    scoremf += factor4
+            if bs[2][0] == bs[0][2] and bs[1][1] == '-':
+                if bs[2][0] == 'x':
+                    scoremf -= factor4
+                elif bs[2][0] == 'o':
+                    scoremf += factor4
+
+
         return scoremf
         
         
@@ -169,8 +309,8 @@ class Team162:
        
         print 'Enter your move: <format:board row column> (you\'re playing with', flag + ")"    
         # if(flag == 'x')
-        mvp = self.minimax(board,old_move,flag,3,0,[])
-        # print(mvp)
-        # time.sleep(14);
+        mvp = self.minimax(board,old_move,flag,3,0 ,[])
+        print(mvp)
+        # time.sleep(7);
         
         return (int(mvp[0]), int(mvp[1]), int(mvp[2]))
