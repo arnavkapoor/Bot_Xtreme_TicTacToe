@@ -1,7 +1,7 @@
 import copy
 import time
 
-class Team162:
+class Team162d:
     def __init__(self):
         pass
 
@@ -12,7 +12,7 @@ class Team162:
            best = [-1,-1,-1, +100000]
 
         if depth == 0:      
-            value = self.calculate_heuristic(board,flag,poss_boards, p_win);
+            value = self.calculate_heuristic(board,flag,poss_boards);
             return [-1 , -1 , -1, value];
 
         cells = board.find_valid_move_cells(old_move)
@@ -32,11 +32,13 @@ class Team162:
                 if flag == 'o':
                     bmove = self.minimax(board,[x,y,z],'x',depth-1,0,poss_boards)
 
-                    
+                
             board.big_boards_status[x][y][z] = '-'
             poss_boards.pop()
             bmove[0],bmove[1],bmove[2] = x,y,z;
-            
+            # if (y%3 == 1 and z%3 == 1):
+            #     bmove[3]+=1;
+
             if flag == 'o':
                 if bmove[3] >= best[3]:
                     best = bmove  # max value        
@@ -73,7 +75,7 @@ class Team162:
 
 
 
-    def calculate_heuristic(self,bs,ch,poss_boards,p_win):
+    def calculate_heuristic(self,bs,ch,poss_boards):
         if ch == 'x':
             op_ch = 'o'
         if ch == 'o':
@@ -81,27 +83,21 @@ class Team162:
 
         bs2 = bs
         scoremf = 0
-        factor = 20
-        if p_win == 0:
-            factor +=20  # Winning triplets in Small Boards
-        factor2 = 300 # Winning Triplets in Big Board(Entire Game)
-        factor3 = 2 # xx* type in small boards
-        factor4 = 20 # xx* type in Big Board
-        if p_win == 0:
-            factor4 +=20  # Winning triplets in Small Boards
-        
+        factor = 30  # Winning triplets in Small Boards
+        factor2 = 500 # Winning Triplets in Big Board(Entire Game)
+        factor3 = 7 # xx* type in small boards
+        factor4 = 0 # xx* type in Big Board
         ssmall_boards_status = copy.deepcopy(bs2.small_boards_status)
-        poss_boards.reverse()
         for mv in poss_boards:
             x = mv[1]/3
             y = mv[2]/3
             z = mv[0]
-            factor += 15
-            factor2 += 50
-            factor3 += 4
-            factor4 += 30
+            factor -= 5
+            factor2 -= 20
+            factor3 -= 1
+            factor4 -= 0
 
-            bs = copy.deepcopy(bs2.big_boards_status[z])
+            bs = bs2.big_boards_status[z]
             for i in range(3):
                     #checking for horizontal pattern(i'th row)
                 if (bs[3*x+i][3*y] == bs[3*x+i][3*y+1] == bs[3*x+i][3*y+2]) and (bs[3*x+i][3*y] == 'o'):
@@ -199,10 +195,6 @@ class Team162:
             #         scoremf -= (factor3-1)
             #     elif (bs[3*x][3*y+2] == 'o'):
             #         scoremf += (factor3-1)
-
-            bs[mv[1]][mv[2]] = '-'
-
-            # Small Boards Region
 
             bs = ssmall_boards_status[z]
             for i in range(3):
@@ -312,7 +304,6 @@ class Team162:
                     scoremf += factor4
 
 
-        poss_boards.reverse()
         return scoremf
         
         

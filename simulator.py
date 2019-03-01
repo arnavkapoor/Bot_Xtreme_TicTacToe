@@ -16,11 +16,12 @@ import signal
 import time
 import copy
 import traceback
-from Team16 import Team16
+from newbeg1 import Team162
+from newbegnodiagonal import Team162d
 from team7 import Team7
 from team11 import Team11
 from ttt import Team
-TIME = 2400000
+TIME = 24000
 MAX_PTS = 86
 
 class TimedOutExc(Exception):
@@ -366,16 +367,16 @@ if __name__ == '__main__':
     obj2 = ''
     option = sys.argv[1]    
     if option == '1':
-        obj1 = Team16()
+        obj1 = Team162()
         obj2 = Team()
     elif option == '2':
         obj1 = Team11()
-        obj2 = Team16()
+        obj2 = Team162()
     elif option == '3':
-        obj1 = Team16()
+        obj1 = Team162()
         obj2 = Team7()
     elif option == '4':
-        obj1 = Team16()
+        obj1 = Team162()
         obj2 = Manual_Player()
     else:
         print 'Invalid option'
