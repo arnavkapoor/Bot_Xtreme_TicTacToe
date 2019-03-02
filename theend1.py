@@ -1,22 +1,29 @@
 import copy
 import time
-
-class Team162:
+# f = 0
+class Team164:
     def __init__(self):
         pass
 
     def minimax(self,board,old_move,flag,depth,p_win, poss_boards):
+        # global f
+        # f+=1
         if flag == 'o':
-           best = [-1,-1,-1, -100000]
+           best = [-1,-1,-1, -10000000000000000]
         else:
-           best = [-1,-1,-1, +100000]
+           best = [-1,-1,-1, +10000000000000000]
 
         if depth == 0:      
             value = self.calculate_heuristic(board,flag,poss_boards, p_win);
-            return [-1 , -1 , -1, value];
+            return [-2, -1 , -1, value];
 
         cells = board.find_valid_move_cells(old_move)
-        
+        # if len(cells) == 0:
+        #     print(old_move)
+        #     print(depth)
+        #     print "chutiye"
+        #     ch = raw_input()
+        #     # time.sleep(10)
         for cell in cells:
             x,y,z = cell[0],cell[1],cell[2]
             poss_boards.append(cell)
@@ -43,13 +50,18 @@ class Team162:
 
             poss_boards.pop()
             bmove[0],bmove[1],bmove[2] = x,y,z;
-            
+            if x == -1:
+                print bmove
+                print "noo"
+                time.sleep(10)
             if flag == 'o':
                 if bmove[3] > best[3]:
                     best = bmove  # max value        
             else:
                 if bmove[3] <= best[3]:
                     best = bmove  # min value
+        # print "arnav"
+        # print best
         # time.sleep(10);
         return best
 
@@ -88,13 +100,14 @@ class Team162:
 
         bs2 = bs
         scoremf = 0
-        factor = 150
+        factor = 600  # Winning triplets in Small Boards
+        factor6 = 600 # Blocking on small boards
         # if p_win == 0:
-        #     factor +=5  # Winning triplets in Small Boards
-        factor2 = 1000 # Winning Triplets in Big Board(Entire Game)
-        factor3 = 30 # xx* type in small boards
-        factor4 = 10 # xx* type in Big Board
-        factor5 = 1
+        #     factor +=5  
+        factor2 = 2000 # Winning Triplets in Big Board(Entire Game)
+        factor3 = 0 # xx* type in small boards
+        factor4 = 0 # xx* type in Big Board
+        factor5 = 1000 # Blocking on big boards
         if p_win == 0:
             factor4 += 0  # Winning triplets in Small Boards
         
@@ -104,10 +117,12 @@ class Team162:
             x = mv[1]/3
             y = mv[2]/3
             z = mv[0]
-            factor *= 3 
-            factor2 *= 3
+            factor *= 4 
+            factor2 *= 5
             factor3 *= 3
             factor4 *= 3
+            factor5 *= 3
+            factor6 *= 3
 
             bs = copy.deepcopy(bs2.big_boards_status[z])
             for i in range(3):
@@ -115,19 +130,35 @@ class Team162:
                 if (bs[3*x+i][3*y] == bs[3*x+i][3*y+1] == bs[3*x+i][3*y+2]) and (bs[3*x+i][3*y] == 'o'):
                     ssmall_boards_status[z][x][y] = 'o'
                     scoremf += factor
-                    scoremf += count(ssmall_boards_status[z], x, y) * factor5 
+                    # if self.count(ssmall_boards_status[z], x, y, 'x') * factor5 >= 500:
+                        # print("Huan")
+                        # time.sleep(10)
+                    scoremf += self.count(ssmall_boards_status[z], x, y, 'x') * factor5 
                 #checking for vertical pattern(i'th column)
                 if (bs[3*x][3*y+i] == bs[3*x+1][3*y+i] == bs[3*x+2][3*y+i]) and (bs[3*x][3*y+i] == 'o'):
                     ssmall_boards_status[z][x][y] = 'o'
-                    scoremf+=factor
+                    scoremf += factor
+                    # if self.count(ssmall_boards_status[z], x, y, 'x') * factor5 >= 500:
+                        # print("Huan")
+                        # time.sleep(10)
+                    scoremf += self.count(ssmall_boards_status[z], x, y, 'x') * factor5 
             
 
                 if (bs[3*x+i][3*y] == bs[3*x+i][3*y+1] == bs[3*x+i][3*y+2]) and (bs[3*x+i][3*y] == 'x'):
                     scoremf-=factor
                     ssmall_boards_status[z][x][y] = 'x'
+                    # if self.count(ssmall_boards_status[z], x, y, 'o') * factor5 >= 500:
+                        # print("Huan")
+                        # time.sleep(10)
+                    scoremf -= self.count(ssmall_boards_status[z], x, y, 'o') * factor5
+
                 if (bs[3*x][3*y+i] == bs[3*x+1][3*y+i] == bs[3*x+2][3*y+i]) and (bs[3*x][3*y+i] == 'x'):
                     scoremf-=factor
                     ssmall_boards_status[z][x][y] = 'x'
+                    # if self.count(ssmall_boards_status[z], x, y, 'o') * factor5 >= 500:
+                        # print("Huan")
+                        # time.sleep(10)
+                    scoremf -= self.count(ssmall_boards_status[z], x, y, 'o') * factor5 
 
                 if (bs[3*x+i][3*y] == bs[3*x+i][3*y+1] and bs[3*x+i][3*y+2]=='-'):
                     if bs[3*x+i][3*y] == 'o':
@@ -164,17 +195,37 @@ class Team162:
             
             if (bs[3*x][3*y] == bs[3*x+1][3*y+1] == bs[3*x+2][3*y+2]) and (bs[3*x][3*y] == 'o'):
                 ssmall_boards_status[z][x][y] = 'o'
-                scoremf+=factor
+                scoremf += factor
+                # if self.count(ssmall_boards_status[z], x, y, 'x') * factor5 >= 500:
+                    # print("Huan")
+                    # time.sleep(10)
+                scoremf += self.count(ssmall_boards_status[z], x, y, 'x') * factor5 
+
             if (bs[3*x][3*y+2] == bs[3*x+1][3*y+1] == bs[3*x+2][3*y]) and (bs[3*x][3*y+2] == 'o'):
                 ssmall_boards_status[z][x][y] = 'o'
-                scoremf+=factor
+                scoremf += factor
+                # if self.count(ssmall_boards_status[z], x, y, 'x') * factor5 >= 500:
+                    # print("Huan")
+                    # time.sleep(10)
+                scoremf += self.count(ssmall_boards_status[z], x, y, 'x') * factor5 
+
 
             if (bs[3*x][3*y] == bs[3*x+1][3*y+1] == bs[3*x+2][3*y+2]) and (bs[3*x][3*y] == 'x'):
-                scoremf-=factor
                 ssmall_boards_status[z][x][y] = 'x'
+                scoremf -= factor
+                # if self.count(ssmall_boards_status[z], x, y, 'o') * factor5 >= 500:
+                    # print("Huan")
+                    # time.sleep(10)
+                scoremf -= self.count(ssmall_boards_status[z], x, y, 'o') * factor5
+
             if (bs[3*x][3*y+2] == bs[3*x+1][3*y+1] == bs[3*x+2][3*y]) and (bs[3*x][3*y+2] == 'x'):
-                scoremf-=factor
+                scoremf -= factor
                 ssmall_boards_status[z][x][y] = 'x'
+                # if self.count(ssmall_boards_status[z], x, y, 'o') * factor5 >= 500:
+                    # print("Huan")
+                    # time.sleep(10)
+                scoremf -= self.count(ssmall_boards_status[z], x, y, 'o') * factor5
+
 
             # Diagonals
             # Top Left to Bottom Right
@@ -212,6 +263,20 @@ class Team162:
             #         scoremf -= (factor3-1)
             #     elif (bs[3*x][3*y+2] == 'o'):
             #         scoremf += (factor3-1)
+            # count_small(self,)
+            if bs[mv[1]][mv[2]] == 'o':
+                val = self.count_small(bs, mv[1], mv[2], 'x') * factor6
+                # if val > 0:
+                    # print("yeh karke aaya")
+                    # time.sleep(2)
+                scoremf += val
+
+            elif bs[mv[1]][mv[2]] == 'x':
+                val = self.count_small(bs, mv[1], mv[2], 'o') * factor6
+                scoremf -= val
+                # if val > 0:
+                    # print("yeh karke aaya")
+                    # time.sleep(2)
 
             bs[mv[1]][mv[2]] = '-'
 
@@ -333,13 +398,145 @@ class Team162:
        
         print 'Enter your move: <format:board row column> (you\'re playing with', flag + ")"    
         # if(flag == 'x')
-        mvp = self.minimax(board,old_move,flag,3,0 ,[])
-        
+        global f
+        f = 0
+        mvp = self.minimax(board,old_move,flag,3,0,[])
+        # print(f)
         print(mvp)
         # time.sleep(7);
         # ch = raw_input();
 
         return (int(mvp[0]), int(mvp[1]), int(mvp[2]))
 
-    def count(self, board, x, y):
-        
+    def count(self, bs, x, y, ch):
+        cnt = 0
+        if x == 0:
+            if y == 0:
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1;
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+                if bs[x+1][y+1] == ch and bs[x+2][y+2] == ch:
+                    cnt+=1
+            if y == 1:
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+            if y == 2:
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+                if bs[x+1][y-1] == ch and bs[x+2][y-2] == ch:
+                    cnt+=1
+        if x == 1:
+            if y == 0:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1;
+            if y == 1:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+                if bs[x-1][y+1] == ch and bs[x+1][y-1] == ch:
+                    cnt+=1
+                if bs[x+1][y+1] == ch and bs[x-1][y-1] == ch:
+                    cnt+=1
+            if y == 2:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+        if x == 2:
+            if y == 0:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1
+                if bs[x-1][y+1] == ch and bs[x-2][y+2] == ch:
+                    cnt+=1
+            if y == 1:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+            if y == 2:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+                if bs[x-1][y-1] == ch and bs[x-2][y-2] == ch:
+                    cnt+=1
+        return cnt
+
+    def count_small(self, bs, x, y, ch):
+
+        cnt = 0
+        if x%3 == 0:
+            if y%3 == 0:
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1;
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+                if bs[x+1][y+1] == ch and bs[x+2][y+2] == ch:
+                    cnt+=1
+            if y%3 == 1:
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+            if y%3 == 2:
+                if bs[x+1][y] == ch and bs[x+2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+                if bs[x+1][y-1] == ch and bs[x+2][y-2] == ch:
+                    cnt+=1
+        if x%3 == 1:
+            if y%3 == 0:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1;
+            if y%3 == 1:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+                if bs[x-1][y+1] == ch and bs[x+1][y-1] == ch:
+                    cnt+=1
+                if bs[x+1][y+1] == ch and bs[x-1][y-1] == ch:
+                    cnt+=1
+            if y%3 == 2:
+                if bs[x-1][y] == ch and bs[x+1][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+        if x%3 == 2:
+            if y%3 == 0:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y+1] == ch and bs[x][y+2] == ch:
+                    cnt+=1
+                if bs[x-1][y+1] == ch and bs[x-2][y+2] == ch:
+                    cnt+=1
+            if y%3 == 1:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y+1] == ch:
+                    cnt+=1
+            if y%3 == 2:
+                if bs[x-1][y] == ch and bs[x-2][y] == ch:
+                    cnt+=1
+                if bs[x][y-1] == ch and bs[x][y-2] == ch:
+                    cnt+=1
+                if bs[x-1][y-1] == ch and bs[x-2][y-2] == ch:
+                    cnt+=1
+        return cnt
+
+
+
+
